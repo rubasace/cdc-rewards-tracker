@@ -26,7 +26,7 @@ NATIVE_AMOUNT_COLUMN = 'Native Amount'
 TRANSACTION_DESCRIPTION_COLUMN = 'Transaction Description'
 TRANSACTION_KIND_COLUMN = 'Transaction Kind'
 
-# TODO store as structure indicating type (taxable/discountable/ignored)
+# TODO store as structure indicating type (taxable/reversal/ignored)
 # Transaction kinds
 CASHBACK_KIND = 'referral_card_cashback'
 CASHBACK_REVERTED_KIND = 'card_cashback_reverted'
@@ -51,7 +51,7 @@ CRYPTO_PURCHASE_KIND = 'viban_purchase'
 
 TAXABLE_TRANSACTIONS = [CASHBACK_KIND, CARD_FULL_CASHBACK_KIND, EARN_INTEREST_PAID_KIND, STAKE_REWARD_KIND,
                         REFERRAL_BONUS_KIND, REFERRAL_GIFT_KIND]
-DISCOUNTABLE_TRANSACTIONS = [CASHBACK_REVERTED_KIND, CARD_FULL_CASHBACK_REVERTED_KIND]
+REVERSALS_TRANSACTIONS = [CASHBACK_REVERTED_KIND, CARD_FULL_CASHBACK_REVERTED_KIND]
 
 logger = logging.getLogger()
 logger.setLevel(LOGGING_LEVEL)
@@ -131,16 +131,16 @@ if __name__ == '__main__':
         {CONVERTED_AMOUNT: ['sum', 'count']})
     logger.debug('Grouped transactions:\n%s', amount_by_kind.to_string())
     taxable = query_by_transaction_type(amount_by_kind, TAXABLE_TRANSACTIONS)
-    discountable = query_by_transaction_type(amount_by_kind, DISCOUNTABLE_TRANSACTIONS)
+    reversals = query_by_transaction_type(amount_by_kind, REVERSALS_TRANSACTIONS)
     taxable_total = taxable[CONVERTED_AMOUNT]['sum'].sum()
-    discountable_total = discountable[CONVERTED_AMOUNT]['sum'].sum()
-    total_income = taxable_total - discountable_total
+    reversals_total = reversals[CONVERTED_AMOUNT]['sum'].sum()
+    total_income = taxable_total - reversals_total
 
     logger.info('REPORT INFO\n'
                  'Taxable transactions:\n'
                  '%s\n'
                  'Taxable transactions total: %d\n'
-                 'Discountable transactions:\n'
+                 'Reversal transactions:\n'
                  '%s\n'
-                 'Discountable transactions total: %d\n'
-                 'Total income: %d %s', taxable.to_string(), taxable_total, discountable.to_string(), discountable_total, total_income, TARGET_CURRENCY)
+                 'Reversal transactions total: %d\n'
+                 'Total income: %d %s', taxable.to_string(), taxable_total, reversals.to_string(), reversals_total, total_income, TARGET_CURRENCY)
